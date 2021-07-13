@@ -2,15 +2,13 @@ package com.example.weatherinfo
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.RelativeLayout
-import android.widget.TextView
+import android.widget.*
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
@@ -32,6 +30,7 @@ class weatherInfo : AppCompatActivity() {
     lateinit var mainContainer: RelativeLayout
     lateinit var ChangeLocation: ImageView
     lateinit var progressBar: ProgressBar
+    lateinit var sharedPreference: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +49,7 @@ class weatherInfo : AppCompatActivity() {
         ChangeLocation = findViewById(R.id.changeLocation);
         mainContainer = findViewById(R.id.mainContainer);
         var getCity = intent.getStringExtra("city")
-        val sharedPreference =  getSharedPreferences("location", Context.MODE_PRIVATE)
+        sharedPreference =  getSharedPreferences("location", Context.MODE_PRIVATE)
         val location = sharedPreference.getString("city","")
 
         ShowInfo(location.toString())
@@ -74,6 +73,13 @@ class weatherInfo : AppCompatActivity() {
             { response ->
                 progressBar.setVisibility(View.GONE);
                 mainContainer.setVisibility(View.VISIBLE);
+
+//                val cityNotFound =response.getString("message")
+//                Log.d("kkkkkkk",cityNotFound)
+//                if(cityNotFound.isEmpty()){
+//                    Toast.makeText(this,"City Not Found",Toast.LENGTH_SHORT).show()
+//                }
+
 
 
                 val weatherArray = response.getJSONArray("weather")
@@ -140,6 +146,12 @@ class weatherInfo : AppCompatActivity() {
             },
             {
                 Log.d("dataError", it.toString())
+                val intent = Intent(this, MainActivity::class.java)
+                var editor = sharedPreference.edit()
+                editor.putString("city","")
+                editor.commit()
+                Toast.makeText(this,"City Not Found",Toast.LENGTH_SHORT).show()
+                startActivity(intent)
             })
 
         queue.add(jsonObjectRequest)
